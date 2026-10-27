@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KCET Rank Predictor - Pavan G</title>
+    <style>
+        :root {
+            --primary-green: #059669;
+            --nav-blue: #1e3a8a; /* Professional Blue for Nav */
+            --dark-green: #064e3b;
+            --light-bg: #f0fdf4;
+            --text-dark: #1f2937;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; scroll-behavior: smooth; }
+        body { margin: 0; background-color: #ffffff; color: var(--text-dark); }
+
+        /* Header */
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 2rem; background: white; border-bottom: 3px solid var(--primary-green);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .branding { font-weight: bold; color: var(--primary-green); font-size: 1.1rem; }
+        .menu-btn { font-size: 1.5rem; cursor: pointer; background: none; border: none; color: var(--primary-green); }
+
+        /* Sidebar - Blue Navigation */
+        .sidebar {
+            width: 280px; background: var(--nav-blue); color: white; padding: 2rem;
+            position: fixed; right: -280px; top: 0; height: 100vh; transition: 0.3s; z-index: 1001;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+        }
+        .sidebar.active { right: 0; }
+        .nav-btn {
+            display: block; width: 100%; padding: 12px; margin: 10px 0;
+            background: rgba(255,255,255,0.1); color: white; text-align: left;
+            border: none; border-radius: 5px; cursor: pointer; font-size: 1rem;
+        }
+        .nav-btn:hover { background: rgba(255,255,255,0.2); }
+        .close-btn { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; float: right; }
+
+        /* Main Content */
+        .main-content { padding: 2rem; max-width: 900px; margin: 0 auto; }
+        .card {
+            background: white; padding: 2rem; border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 2.5rem;
+            border-top: 5px solid var(--primary-green);
+        }
+
+        h2 { color: var(--dark-green); margin-top: 0; }
+        input, select { width: 100%; padding: 0.8rem; margin: 0.5rem 0 1.5rem; border: 1px solid #ccc; border-radius: 6px; }
+        
+        .action-btn {
+            background: var(--primary-green); color: white; border: none; padding: 1rem;
+            border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-bottom: 10px;
+        }
+
+        .download-btn { background: #4b5563; } /* Gray button for PDF */
+
+        .result-box {
+            display: none; margin-top: 2rem; padding: 1.5rem; text-align: center;
+            background: var(--light-bg); border-radius: 8px; border: 1px dashed var(--primary-green);
+        }
+
+        /* Guide Styling */
+        .guide-content h3 { color: var(--nav-blue); border-left: 4px solid var(--primary-green); padding-left: 10px; margin-top: 20px; }
+        .guide-content ul { padding-left: 20px; line-height: 1.6; }
+        .mistake-tag { color: #dc2626; font-weight: bold; }
+
+        /* Grid */
+        .college-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem; }
+        .college-item { padding: 8px; background: #f9fafb; border-radius: 4px; border-left: 3px solid var(--primary-green); }
+
+        /* Disclaimer */
+        .disclaimer {
+            font-size: 11px; color: #6b7280; text-align: center; 
+            padding: 2rem; line-height: 1.5; border-top: 1px solid #eee; background: #fafafa;
+        }
+
+        @media print {
+            .top-bar, .sidebar, .action-btn, .menu-btn, .disclaimer, #top20, #kcetGuide { display: none !important; }
+            .card { box-shadow: none; border: 1px solid #eee; }
+            .result-box { display: block !important; border: 2px solid #000; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-bar">
+        <div class="branding">🚀 Built by Pavan G</div>
+        <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </header>
+
+    <!-- BLUE Navigation Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <button class="close-btn" onclick="toggleMenu()">×</button>
+        <h2 style="color:white; margin-top:40px">Dashboard</h2>
+        <button class="nav-btn" onclick="scrollToSec('calculator')">📊 Rank Calculator</button>
+        <button class="nav-btn" onclick="scrollToSec('colleges')">🏫 College Finder</button>
+        <button class="nav-btn" onclick="scrollToSec('top20')">🏆 Top 20 Colleges</button>
+        <button class="nav-btn" onclick="scrollToSec('kcetGuide')">📚 KCET Guide</button>
+    </nav>
+
+    <main class="main-content">
+        <!-- Section 1: Rank Calculator -->
+        <section id="calculator" class="card">
+            <h2>KCET Rank Predictor</h2>
+            <label>Stream</label>
+            <select id="stream">
+                <option value="300">PCM (300 Marks)</option>
+                <option value="400">PCMB (400 Marks)</option>
+            </select>
+            <label>Board Marks</label>
+            <input type="number" id="boardMarks" placeholder="Total marks in PCM/B">
+            <label>Expected KCET Marks (180)</label>
+            <input type="number" id="kcetMarks" placeholder="Your score out of 180">
+            <button class="action-btn" onclick="calculateRank()">Predict Rank</button>
+
+            <div id="calcResult" class="result-box">
+                <span style="font-size:1.5rem; font-weight:bold; color:var(--primary-green)">🍀 BEST OF LUCK</span>
+                <div id="printArea">
+                    <p>Calculated Score: <strong id="fScore"></strong></p>
+                    <p>Estimated Rank Range: <strong id="rDisp" style="color:var(--nav-blue); font-size:1.2rem;"></strong></p>
+                    <p style="font-size:0.8rem; color:#666;">Generated by KCET Dashboard (Pavan G)</p>
+                </div>
+                <button class="action-btn download-btn" onclick="downloadPDF()">⬇️ Download Rank Report (PDF)</button>
+            </div>
+        </section>
+
+        <!-- Section 2: Colleges -->
+        <section id="colleges" class="card">
+            <h2>College Suggestion</h2>
+            <input type="number" id="userRank" placeholder="Enter your rank here">
+            <button class="action-btn" onclick="suggestColleges()">Find My Colleges</button>
+            <div id="collegeResult" class="result-box">
+                <p id="collegeList" style="font-weight:bold;"></p>
+            </div>
+        </section>
+
+        <!-- Section 3: Top 20 -->
+        <section id="top20" class="card">
+            <h2>Top 20 Engineering Colleges</h2>
+            <div class="college-grid">
+                <div class="college-item">1. RVCE, Bangalore</div>
+                <div class="college-item">2. PES University, Bangalore</div>
+                <div class="college-item">3. BMSCE, Bangalore</div>
+                <div class="college-item">4. MSRIT, Bangalore</div>
+                <div class="college-item">5. BIT, Bangalore</div>
+                <div class="college-item">6. NIE, Mysore</div>
+                <div class="college-item">7. DSCE, Bangalore</div>
+                <div class="college-item">8. BMSIT, Bangalore</div>
+                <div class="college-item">9. SJCE, Mysore</div>
+                <div class="college-item">10. SIT, Tumkur</div>
+                <div class="college-item">11. JSSSTU, Mysore</div>
+                <div class="college-item">12. NMAMIT, Nitte</div>
+                <div class="college-item">13. RNSIT, Bangalore</div>
+                <div class="college-item">14. BNMIT, Bangalore</div>
+                <div class="college-item">15. MVJCE, Bangalore</div>
+                <div class="college-item">16. Dr. AIT, Bangalore</div>
+                <div class="college-item">17. NMIT, Bangalore</div>
+                <div class="college-item">18. CMRIT, Bangalore</div>
+                <div class="college-item">19. KLE Tech, Hubballi</div>
+                <div class="college-item">20. SJBIT, Bangalore</div>
+            </div>
+        </section>
+
+        <!-- NEW Section: KCET Guide -->
+        <section id="kcetGuide" class="card guide-content">
+            <h2>📚 KCET Counselling Guide</h2>
+            
+            <h3>1. The Counselling Process</h3>
+            <ul>
+                <li><strong>Document Verification:</strong> You must visit a nodal center with original documents. Once verified, you get a <strong>Secret Key</strong>.</li>
+                <li><strong>Registration:</strong> Use the Secret Key to create a password on the KEA portal.</li>
+                <li><strong>Mock Allotment:</strong> KEA runs a "trial" result to show what college you might get. You can change your options after this.</li>
+            </ul>
+
+            <h3>2. How to do Option Entry?</h3>
+            <p>This is where you list your college preferences. <strong>Priority matters!</strong> KEA checks your #1 choice first. If available, you get it. If not, it moves to #2.</p>
+            <ul>
+                <li>List as many colleges as possible (no limit).</li>
+                <li>Put your "Dream Colleges" at the top, even if your rank is low.</li>
+                <li>Put "Backup Colleges" at the bottom.</li>
+            </ul>
+
+            <h3>3. Mistakes to Avoid ⚠️</h3>
+            <ul>
+                <li><span class="mistake-tag">Entering too few options:</span> You might end up with NO seat.</li>
+                <li><span class="mistake-tag">Sharing Secret Key:</span> Never share your key or password with anyone.</li>
+                <li><span class="mistake-tag">Forgetting to Logout:</span> Always click 'Logout' after saving options to prevent data loss.</li>
+                <li><span class="mistake-tag">Ignoring Mock Results:</span> Use the mock results to rearrange your list realistically.</li>
+            </ul>
+        </section>
+    </main>
+
+    <div class="disclaimer">
+        <strong>CRITICAL DISCLAIMER:</strong> This result is <u>not</u> an official KCET rank. It is a mathematical estimate based on 50:50 weightage and previous year trends. 
+        Factors like paper difficulty, number of applicants, and normalization can significantly change the real rank. 
+        Always refer to the official KEA website ([cetonline.karnataka.gov.in](https://karnataka.gov.in)) for authentic data. 
+        Built with care by <strong>Pavan G</strong>.
+    </div>
+
+    <script>
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); }
+        
+        function scrollToSec(id) {
+            document.getElementById(id).scrollIntoView();
+            if(window.innerWidth < 768) toggleMenu();
+        }
+
+        function calculateRank() {
+            const stream = parseFloat(document.getElementById('stream').value);
+            const board = parseFloat(document.getElementById('boardMarks').value);
+            const kcet = parseFloat(document.getElementById('kcetMarks').value);
+            if (!board || !kcet) return alert("Please enter all marks!");
+
+            const finalScore = ((board/stream)*100*0.5) + ((kcet/180)*100*0.5);
+            let rank = finalScore > 95 ? "Below 1,000" : finalScore >= 90 ? "1,000 – 5,000" : 
+                       finalScore >= 85 ? "5,000 – 10,000" : finalScore >= 80 ? "10,000 – 20,000" : 
+                       finalScore >= 70 ? "20,000 – 40,000" : "Above 40,000";
+
+            document.getElementById('fScore').innerText = finalScore.toFixed(2);
+            document.getElementById('rDisp').innerText = rank;
+            document.getElementById('calcResult').style.display = "block";
+        }
+
+        function suggestColleges() {
+            const r = parseFloat(document.getElementById('userRank').value);
+            if (!r) return alert("Enter rank first!");
+            let list = r < 1000 ? "RVCE, PES (RR), BMSCE" : r < 5000 ? "MSRIT, BMSIT, BIT" : 
+                       r < 10000 ? "DSCE, NIE, SJCE" : r < 20000 ? "BIT, SJBIT, RNSIT" : "Local/Regional Engineering Colleges";
+            document.getElementById('collegeList').innerText = list;
+            document.getElementById('collegeResult').style.display = "block";
+        }
+
+        function downloadPDF() {
+            window.print(); // Triggers browser's PDF/Print dialogue
+        }
+    </script>
+</body>
+</html>
